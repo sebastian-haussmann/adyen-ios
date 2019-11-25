@@ -24,6 +24,8 @@ public final class CardComponent: PaymentComponent, PresentableComponent {
     /// Indicates if the field for storing the card payment method should be displayed in the form. Defaults to true.
     public var showsStorePaymentMethodField = true
     
+    public var showsPaymentHeader = true
+    
     /// Initializes the card component.
     ///
     /// - Parameters:
@@ -93,9 +95,15 @@ public final class CardComponent: PaymentComponent, PresentableComponent {
         
         footerItem.showsActivityIndicator.value = true
         
+        var cardType: CardType?
+        if let formatter = numberItem.formatter as? CardNumberFormatter {
+            cardType = formatter.cardType
+        }
+        
         let details = CardDetails(paymentMethod: paymentMethod as! CardPaymentMethod, // swiftlint:disable:this force_cast
                                   encryptedCard: encryptedCard,
-                                  holderName: holderNameItem?.value)
+                                  holderName: holderNameItem?.value,
+                                  cardType: cardType)
         
         let data = PaymentComponentData(paymentMethodDetails: details,
                                         storePaymentMethod: storeDetailsItem?.value ?? false)
@@ -136,9 +144,11 @@ public final class CardComponent: PaymentComponent, PresentableComponent {
     private lazy var formViewController: FormViewController = {
         let formViewController = FormViewController()
         
-        let headerItem = FormHeaderItem()
-        headerItem.title = paymentMethod.name
-        formViewController.append(headerItem)
+        if showsPaymentHeader {
+            let headerItem = FormHeaderItem()
+            headerItem.title = paymentMethod.name
+            formViewController.append(headerItem)
+        }
         formViewController.append(numberItem, using: FormCardNumberItemView.self)
         
         let splitTextItem = FormSplitTextItem(items: [expiryDateItem, securityCodeItem])
